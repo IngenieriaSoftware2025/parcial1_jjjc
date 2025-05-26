@@ -4,40 +4,8 @@ import { validarFormulario, Toast } from '../funciones';
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
 
-const FormAsistencias = document.getElementById('FormAsistencias');
-const BtnRegistrarAsistencia = document.getElementById('BtnRegistrarAsistencia');
-const BtnLimpiarAsistencia = document.getElementById('BtnLimpiarAsistencia');
 
-const actualizarReloj = () => {
-    const ahora = new Date();
-    
-    const horas = ahora.getHours().toString().padStart(2, '0');
-    const minutos = ahora.getMinutes().toString().padStart(2, '0');
-    const segundos = ahora.getSeconds().toString().padStart(2, '0');
-    
-    const opciones = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric'
-    };
-    
-    const fechaFormateada = ahora.toLocaleDateString('es-ES', opciones);
-    
-    const horaElement = document.getElementById('horaActual');
-    const fechaElement = document.getElementById('fechaActual');
-    
-    if (horaElement) {
-        horaElement.textContent = `${horas}:${minutos}:${segundos}`;
-    }
-    
-    if (fechaElement) {
-        fechaElement.textContent = fechaFormateada;
-    }
-};
 
-actualizarReloj();
-setInterval(actualizarReloj, 1000);
 
 const RegistrarAsistencia = async (event) => {
     event.preventDefault();
@@ -55,15 +23,7 @@ const RegistrarAsistencia = async (event) => {
         return;
     }
 
-    const ahora = new Date();
-    const horaActual = ahora.toLocaleString('es-ES', { 
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
+
 
     const actividadSeleccionada = document.getElementById('actividad_id');
     const nombreActividad = actividadSeleccionada.options[actividadSeleccionada.selectedIndex].text;
