@@ -220,19 +220,23 @@ class ActividadesController extends ActiveRecord {
                 return;
             }
             
-            $resultado = $actividad->eliminar();
+            $actividad->sincronizar([
+                'situacion' => '0'
+            ]);
+            
+            $resultado = $actividad->actualizar();
             
             if($resultado) {
                 http_response_code(200);
                 echo json_encode([
                     'codigo' => 1,
-                    'mensaje' => 'La actividad ha sido eliminada correctamente'
+                    'mensaje' => 'La actividad ha sido desactivada correctamente'
                 ]);
             } else {
                 http_response_code(400);
                 echo json_encode([
                     'codigo' => 0,
-                    'mensaje' => 'No se pudo eliminar la actividad'
+                    'mensaje' => 'No se pudo desactivar la actividad'
                 ]);
             }
             
@@ -240,7 +244,7 @@ class ActividadesController extends ActiveRecord {
             http_response_code(400);
             echo json_encode([
                 'codigo' => 0,
-                'mensaje' => 'Error al eliminar la actividad',
+                'mensaje' => 'Error al desactivar la actividad',
                 'detalle' => $e->getMessage(),
             ]);
         }

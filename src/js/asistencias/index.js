@@ -8,6 +8,37 @@ const FormAsistencias = document.getElementById('FormAsistencias');
 const BtnRegistrarAsistencia = document.getElementById('BtnRegistrarAsistencia');
 const BtnLimpiarAsistencia = document.getElementById('BtnLimpiarAsistencia');
 
+const actualizarReloj = () => {
+    const ahora = new Date();
+    
+    const horas = ahora.getHours().toString().padStart(2, '0');
+    const minutos = ahora.getMinutes().toString().padStart(2, '0');
+    const segundos = ahora.getSeconds().toString().padStart(2, '0');
+    
+    const opciones = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric'
+    };
+    
+    const fechaFormateada = ahora.toLocaleDateString('es-ES', opciones);
+    
+    const horaElement = document.getElementById('horaActual');
+    const fechaElement = document.getElementById('fechaActual');
+    
+    if (horaElement) {
+        horaElement.textContent = `${horas}:${minutos}:${segundos}`;
+    }
+    
+    if (fechaElement) {
+        fechaElement.textContent = fechaFormateada;
+    }
+};
+
+actualizarReloj();
+setInterval(actualizarReloj, 1000);
+
 const RegistrarAsistencia = async (event) => {
     event.preventDefault();
     BtnRegistrarAsistencia.disabled = true;
@@ -20,6 +51,39 @@ const RegistrarAsistencia = async (event) => {
             text: "Debe seleccionar una actividad",
             showConfirmButton: true,
         });
+        BtnRegistrarAsistencia.disabled = false;
+        return;
+    }
+
+    const ahora = new Date();
+    const horaActual = ahora.toLocaleString('es-ES', { 
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
+    const actividadSeleccionada = document.getElementById('actividad_id');
+    const nombreActividad = actividadSeleccionada.options[actividadSeleccionada.selectedIndex].text;
+
+    const confirmacion = await Swal.fire({
+        title: '¿Confirmar Asistencia?',
+        html: `
+            <strong>Actividad:</strong> ${nombreActividad}<br>
+            <strong>Fecha y hora actual:</strong> ${horaActual}<br><br>
+            <small>El sistema registrará automáticamente la hora actual</small>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#00b894',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, marcar asistencia',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmacion.isConfirmed) {
         BtnRegistrarAsistencia.disabled = false;
         return;
     }
@@ -44,6 +108,7 @@ const RegistrarAsistencia = async (event) => {
                 title: "¡Asistencia Registrada!",
                 text: mensaje,
                 showConfirmButton: true,
+                timer: 4000
             });
 
             limpiarFormularioAsistencia();
@@ -96,13 +161,8 @@ const BuscarAsistencias = async () => {
         const { codigo, mensaje, data } = datos
 
         if (codigo == 1) {
-            const asistenciasPuntuales = data.filter(asistencia => {
-                return new Date(asistencia.fecha) <= new Date(asistencia.fecha_actividad);
-            });
-            
-            const asistenciasTarde = data.filter(asistencia => {
-                return new Date(asistencia.fecha) > new Date(asistencia.fecha_actividad);
-            });
+            const asistenciasPuntuales = data.puntuales || [];
+            const asistenciasTarde = data.tarde || [];
 
             datatableAsistenciasPuntuales.clear().draw();
             datatableAsistenciasPuntuales.rows.add(asistenciasPuntuales).draw();
@@ -143,7 +203,7 @@ const datatableAsistenciasPuntuales = new DataTable('#TablaAsistenciasPuntuales'
     `,
     language: lenguaje,
     data: [],
-    order: [[3, 'desc']], 
+    order: [[4, 'desc']], 
     columns: [
         {
             title: 'No.',
@@ -155,22 +215,44 @@ const datatableAsistenciasPuntuales = new DataTable('#TablaAsistenciasPuntuales'
         { 
             title: 'Actividad', 
             data: 'actividad_nombre', 
-            width: '30%' 
+            width: '25%' 
         },
         { 
             title: 'Fecha Programada', 
             data: 'fecha_actividad', 
-            width: '20%'
+            width: '18%',
+            render: (data) => {
+                const fecha = new Date(data);
+                return fecha.toLocaleString('es-ES');
+            }
         },
         { 
-            title: 'Fecha de Llegada', 
+            title: 'Hora Asistencia', 
             data: 'fecha', 
-            width: '20%'
+            width: '18%',
+            render: (data) => {
+                const fecha = new Date(data);
+                return fecha.toLocaleString('es-ES');
+            }
+        },
+        { 
+            title: 'Fecha Asistencia', 
+            data: 'fecha', 
+            width: '0%',
+            visible: false
+        },
+        {
+            title: 'Estado',
+            data: 'estado_detallado',
+            width: '12%',
+            render: (data) => {
+                return `<span class="badge bg-success">✓ ${data}</span>`;
+            }
         },
         {
             title: 'Acciones',
             data: 'id',
-            width: '25%',
+            width: '12%',
             searchable: false,
             orderable: false,
             render: (data, type, row, meta) => {
@@ -202,7 +284,7 @@ const datatableAsistenciasTarde = new DataTable('#TablaAsistenciasTarde', {
     `,
     language: lenguaje,
     data: [],
-    order: [[3, 'desc']], 
+    order: [[4, 'desc']], 
     columns: [
         {
             title: 'No.',
@@ -214,22 +296,44 @@ const datatableAsistenciasTarde = new DataTable('#TablaAsistenciasTarde', {
         { 
             title: 'Actividad', 
             data: 'actividad_nombre', 
-            width: '30%' 
+            width: '25%' 
         },
         { 
             title: 'Fecha Programada', 
             data: 'fecha_actividad', 
-            width: '20%'
+            width: '18%',
+            render: (data) => {
+                const fecha = new Date(data);
+                return fecha.toLocaleString('es-ES');
+            }
         },
         { 
-            title: 'Fecha de Llegada', 
+            title: 'Hora de Asistencia', 
             data: 'fecha', 
-            width: '20%'
+            width: '18%',
+            render: (data) => {
+                const fecha = new Date(data);
+                return fecha.toLocaleString('es-ES');
+            }
+        },
+        { 
+            title: 'Fecha de Asistencia', 
+            data: 'fecha', 
+            width: '0%',
+            visible: false
+        },
+        {
+            title: 'Estado',
+            data: 'estado_detallado',
+            width: '12%',
+            render: (data) => {
+                return `<span class="badge bg-danger">⚠ ${data}</span>`;
+            }
         },
         {
             title: 'Acciones',
             data: 'id',
-            width: '25%',
+            width: '12%',
             searchable: false,
             orderable: false,
             render: (data, type, row, meta) => {

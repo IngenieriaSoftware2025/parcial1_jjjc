@@ -91,10 +91,10 @@
                     <a class="nav-link" aria-current="page" href="/<?= $_ENV['APP_NAME'] ?>/"><i class="bi bi-house-fill me-2"></i>Inicio</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/<?= $_ENV['APP_NAME'] ?>/actividades"><i class="bi bi-cart-check me-2"></i>Actividades</a>
+                    <a class="nav-link" href="/<?= $_ENV['APP_NAME'] ?>/actividades"><i class="bi bi-clipboard2-check-fill"></i> Actividades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/<?= $_ENV['APP_NAME'] ?>/asistencias"><i class="bi bi-cart-check me-2"></i>Asistencias</a>
+                    <a class="nav-link" href="/<?= $_ENV['APP_NAME'] ?>/asistencias"><i class="bi bi-clock-history"></i> Asistencias</a>
                 </li>
             </ul>
         </div>

@@ -29,15 +29,6 @@ class AsistenciasController extends ActiveRecord {
             return;
         }
 
-        if(empty($_POST['fecha_asistencia'])) {
-            http_response_code(400);
-            echo json_encode([
-                'codigo' => 0,
-                'mensaje' => 'Debe ingresar la fecha y hora de asistencia'
-            ]);
-            return;
-        }
-
         $_POST['actividad_id'] = filter_var($_POST['actividad_id'], FILTER_VALIDATE_INT);
         if(!$_POST['actividad_id']) {
             http_response_code(400);
@@ -49,7 +40,9 @@ class AsistenciasController extends ActiveRecord {
         }
 
         try {
-            $sql = "SELECT COUNT(*) as total FROM asistencia WHERE actividad_id = " . $_POST['actividad_id'];
+            date_default_timezone_set('America/Guatemala');
+            
+            $sql = "SELECT COUNT(*) as total FROM asistencia WHERE actividad_id = " . $_POST['actividad_id'] . " AND situacion = '1'";
             $resultado = self::fetchArray($sql);
             
             if ($resultado[0]['total'] > 0) {
@@ -61,21 +54,27 @@ class AsistenciasController extends ActiveRecord {
                 return;
             }
 
-            $fechaUsuario = $_POST['fecha_asistencia'];
-            $fechaFormateada = date('Y-m-d H:i:s', strtotime($fechaUsuario));
+            $fechaHoraActual = date('Y-m-d H:i:s');
 
             $asistencia = new Asistencias([
                 'actividad_id' => $_POST['actividad_id'],
-                'fecha' => $fechaFormateada,
+                'fecha' => $fechaHoraActual,
                 'situacion' => '1'
             ]);
 
             $crear = $asistencia->crear();
 
+            $sqlActividad = "SELECT nombre, fecha FROM actividades WHERE id = " . $_POST['actividad_id'];
+            $actividad = self::fetchFirst($sqlActividad);
+
+            $fechaFormateada = date('d/m/Y H:i:s', strtotime($fechaHoraActual));
+            
             http_response_code(200);
             echo json_encode([
                 'codigo' => 1,
-                'mensaje' => 'Asistencia registrada correctamente'
+                'mensaje' => 'Asistencia registrada correctamente para "' . $actividad['nombre'] . '" el ' . $fechaFormateada . ' (Hora Guatemala)',
+                'fecha_marcaje' => $fechaHoraActual,
+                'fecha_formateada' => $fechaFormateada
             ]);
         } catch (Exception $e) {
             http_response_code(400);
@@ -92,6 +91,8 @@ class AsistenciasController extends ActiveRecord {
         header('Content-Type: application/json; charset=utf-8');
 
         try {
+            date_default_timezone_set('America/Guatemala');
+            
             $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
             $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
             $actividad_id = isset($_GET['actividad_id']) ? $_GET['actividad_id'] : null;
@@ -112,7 +113,17 @@ class AsistenciasController extends ActiveRecord {
 
             $where = implode(" AND ", $condiciones);
 
-            $sql = "SELECT a.*, ac.nombre as actividad_nombre, ac.fecha as fecha_actividad
+            $sql = "SELECT a.*, 
+                    ac.nombre as actividad_nombre, 
+                    ac.fecha as fecha_actividad,
+                    CASE 
+                        WHEN a.fecha <= ac.fecha THEN 'puntual'
+                        ELSE 'tarde'
+                    END as tipo_asistencia,
+                    CASE 
+                        WHEN a.fecha <= ac.fecha THEN 'A tiempo'
+                        ELSE 'Llego tarde'
+                    END as estado_detallado
                     FROM asistencia a
                     JOIN actividades ac ON a.actividad_id = ac.id
                     WHERE $where
@@ -120,11 +131,26 @@ class AsistenciasController extends ActiveRecord {
             
             $data = self::fetchArray($sql);
 
+            $asistencias_puntuales = [];
+            $asistencias_tarde = [];
+
+            foreach ($data as $asistencia) {
+                if ($asistencia['tipo_asistencia'] === 'puntual') {
+                    $asistencias_puntuales[] = $asistencia;
+                } else {
+                    $asistencias_tarde[] = $asistencia;
+                }
+            }
+
             http_response_code(200);
             echo json_encode([
                 'codigo' => 1,
                 'mensaje' => 'Asistencias obtenidas correctamente',
-                'data' => $data
+                'data' => [
+                    'puntuales' => $asistencias_puntuales,
+                    'tarde' => $asistencias_tarde,
+                    'total' => $data
+                ]
             ]);
         } catch (Exception $e) {
             http_response_code(400);
@@ -171,19 +197,23 @@ class AsistenciasController extends ActiveRecord {
                 return;
             }
             
-            $resultado = $asistencia->eliminar();
+            $asistencia->sincronizar([
+                'situacion' => '0'
+            ]);
+            
+            $resultado = $asistencia->actualizar();
             
             if($resultado) {
                 http_response_code(200);
                 echo json_encode([
                     'codigo' => 1,
-                    'mensaje' => 'La asistencia ha sido eliminada correctamente'
+                    'mensaje' => 'La asistencia ha sido desactivada correctamente'
                 ]);
             } else {
                 http_response_code(400);
                 echo json_encode([
                     'codigo' => 0,
-                    'mensaje' => 'No se pudo eliminar la asistencia'
+                    'mensaje' => 'No se pudo desactivar la asistencia'
                 ]);
             }
             
@@ -191,7 +221,7 @@ class AsistenciasController extends ActiveRecord {
             http_response_code(400);
             echo json_encode([
                 'codigo' => 0,
-                'mensaje' => 'Error al eliminar la asistencia',
+                'mensaje' => 'Error al desactivar la asistencia',
                 'detalle' => $e->getMessage(),
             ]);
         }

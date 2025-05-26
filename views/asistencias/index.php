@@ -85,27 +85,44 @@
         .badge-tarde {
             background: linear-gradient(45deg, #fd79a8, #e84393) !important;
         }
+        .asis-container {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-asis {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        
     </style>
 </head>
 <body>
-    <div class="container">
-     
+  
 
         <div class="row justify-content-center p-3">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #28a745;">
                     <div class="card-body p-3">
-                        <div class="row mb-3">
-                            <h5 class="text-center mb-2">¡Registra tu Asistencia Ahora!</h5>
-                            <h4 class="text-center mb-2 text-success">REGISTRO DE ASISTENCIAS</h4>
-                        </div>
-
-                        <div class="row justify-content-center p-5 shadow-lg">
+                        <div class="asis-container">
+                            <h4 class="mb-3">
+                                <i class="bi bi-clock me-2"></i>ASISTENCIA
+                            </h4>
+                            <p class="mb-4">Selecciona tu actividad y marca tu asistencia con la hora actual del sistema</p>
+                            
                             <form id="FormAsistencias">
-                                <div class="row mb-3 justify-content-center">
-                                    <div class="col-lg-6">
-                                        <label for="actividad_id" class="form-label">SELECCIONAR ACTIVIDAD</label>
-                                        <select name="actividad_id" class="form-select" id="actividad_id">
+                                <div class="row justify-content-center mb-4">
+                                    <div class="col-lg-8">
+                                        <select name="actividad_id" class="form-select form-select-lg" id="actividad_id" style="background: white; color: #333;">
                                             <option value="" class="text-center"> -- SELECCIONE UNA ACTIVIDAD -- </option>
                                             <?php foreach($actividades as $a): ?>
                                                 <option value="<?= $a->id ?>">
@@ -116,20 +133,12 @@
                                     </div>
                                 </div>
 
-                                <div class="row mb-3 justify-content-center">
-                                    <div class="col-lg-6">
-                                        <label for="fecha_asistencia" class="form-label">FECHA Y HORA DE ASISTENCIA</label>
-                                        <input type="datetime-local" class="form-control" id="fecha_asistencia" name="fecha_asistencia" required>
-                                    </div>
-                                </div>
-
-                                <div class="row justify-content-center mt-4">
+                                <div class="row justify-content-center">
                                     <div class="col-auto">
-                                        <button class="btn btn-success btn-lg" type="submit" id="BtnRegistrarAsistencia">
-                                            <i class="bi bi-check-circle me-2"></i>Registrar Asistencia
+                                        <button class="btn btn-asis btn-lg" type="submit" id="BtnRegistrarAsistencia">
+                                            <i class="bi bi-check-circle me-2"></i>MARCAR ASISTENCIA
                                         </button>
                                     </div>
-
                                     <div class="col-auto">
                                         <button class="btn btn-secondary" type="reset" id="BtnLimpiarAsistencia">
                                             <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
