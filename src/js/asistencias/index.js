@@ -4,9 +4,6 @@ import { validarFormulario, Toast } from '../funciones';
 import DataTable from "datatables.net-bs5";
 import { lenguaje } from "../lenguaje";
 
-const FormAsistencias = document.getElementById('FormAsistencias');
-const BtnRegistrarAsistencia = document.getElementById('BtnRegistrarAsistencia');
-const BtnLimpiarAsistencia = document.getElementById('BtnLimpiarAsistencia');
 
 
 
@@ -26,15 +23,7 @@ const RegistrarAsistencia = async (event) => {
         return;
     }
 
-    const ahora = new Date();
-    const horaActual = ahora.toLocaleString('es-ES', { 
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
+
 
     const actividadSeleccionada = document.getElementById('actividad_id');
     const nombreActividad = actividadSeleccionada.options[actividadSeleccionada.selectedIndex].text;
