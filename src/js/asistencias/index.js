@@ -8,36 +8,7 @@ const FormAsistencias = document.getElementById('FormAsistencias');
 const BtnRegistrarAsistencia = document.getElementById('BtnRegistrarAsistencia');
 const BtnLimpiarAsistencia = document.getElementById('BtnLimpiarAsistencia');
 
-const actualizarReloj = () => {
-    const ahora = new Date();
-    
-    const horas = ahora.getHours().toString().padStart(2, '0');
-    const minutos = ahora.getMinutes().toString().padStart(2, '0');
-    const segundos = ahora.getSeconds().toString().padStart(2, '0');
-    
-    const opciones = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric'
-    };
-    
-    const fechaFormateada = ahora.toLocaleDateString('es-ES', opciones);
-    
-    const horaElement = document.getElementById('horaActual');
-    const fechaElement = document.getElementById('fechaActual');
-    
-    if (horaElement) {
-        horaElement.textContent = `${horas}:${minutos}:${segundos}`;
-    }
-    
-    if (fechaElement) {
-        fechaElement.textContent = fechaFormateada;
-    }
-};
 
-actualizarReloj();
-setInterval(actualizarReloj, 1000);
 
 const RegistrarAsistencia = async (event) => {
     event.preventDefault();
